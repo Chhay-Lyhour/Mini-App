@@ -56,7 +56,7 @@ function App() {
         <h1>Product Catalog</h1>
         <div className="catalog-meta">
           <p className="product-count">{visibleProducts.length} products</p>
-          {saleCount > 0 && <SaleCounter count={visibleProducts.length} />}
+          {saleCount > 0 && <SaleCounter count={saleCount} />}
         </div>
         <FilterToggle checked={inStockOnly} onChange={setInStockOnly} />
       </header>
