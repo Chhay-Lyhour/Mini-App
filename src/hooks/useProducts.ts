@@ -10,7 +10,7 @@ interface UseProductsResult {
 }
 
 export function useProducts(): UseProductsResult {
-  const [products, setProducts] = useState<Product[]>([])
+  const [products, setProducts] = useState<Product[]>(null as unknown as Product[])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
@@ -19,7 +19,7 @@ export function useProducts(): UseProductsResult {
 
     async function loadProducts() {
       try {
-        const response = await fetch('/products.json')
+        const response = await fetch('/prodcuts.json')
         if (!response.ok) {
           throw new Error(`Failed to load products: ${response.status}`)
         }
