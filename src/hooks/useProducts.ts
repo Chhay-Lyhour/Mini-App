@@ -10,7 +10,7 @@ interface UseProductsResult {
 }
 
 export function useProducts(): UseProductsResult {
-  const [products, setProducts] = useState<Product[]>(null as unknown as Product[])
+  const [products, setProducts] = useState<Product[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
