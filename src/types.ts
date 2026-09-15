@@ -5,12 +5,17 @@ export interface Product {
   category: string
   inStock: boolean
   onSale: boolean
+  costPrice: number
 }
+
+export type PublicProduct = Omit<Product, 'costPrice'>
 
 export interface ProductFormState {
   name: string
   price: string
 }
+
+export type ProductFormDraft = Partial<ProductFormState>
 
 export interface ProductFormErrors {
   name?: string

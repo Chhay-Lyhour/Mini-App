@@ -1,46 +1,53 @@
 import { useState } from 'react'
 import type { FormEvent } from 'react'
-import { initialProducts } from './data/products'
+import { useProducts } from './hooks/useProducts'
 import { validateProductForm } from './validation'
-import type { Product, ProductFormErrors, ProductFormState } from './types'
+import { ProductGrid } from './components/ProductGrid'
+import { FilterToggle } from './components/FilterToggle'
+import { SaleCounter } from './components/SaleCounter'
+import { AddProductForm } from './components/AddProductForm'
+import type { Product, ProductFormDraft, ProductFormErrors, PublicProduct } from './types'
 import './App.css'
 
-const emptyForm: ProductFormState = { name: '', price: '' }
-
 function App() {
-  const [products, setProducts] = useState<Product[]>(initialProducts)
+  const { products, setProducts, isLoading, error } = useProducts()
   const [inStockOnly, setInStockOnly] = useState(false)
-  const [form, setForm] = useState<ProductFormState>(emptyForm)
+  const [draft, setDraft] = useState<ProductFormDraft>({})
   const [errors, setErrors] = useState<ProductFormErrors>({})
 
+  const publicProducts: PublicProduct[] = products.map(({ costPrice: _costPrice, ...rest }) => rest)
+
   const visibleProducts = inStockOnly
-    ? products.filter((product) => product.inStock)
-    : products
+    ? publicProducts.filter((product) => product.inStock)
+    : publicProducts
 
   const saleCount = products.filter((product) => product.onSale).length
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
 
-    const validationErrors = validateProductForm(form)
+    const validationErrors = validateProductForm(draft)
     setErrors(validationErrors)
 
     if (Object.keys(validationErrors).length > 0) {
       return
     }
 
+    const name = draft.name ?? ''
+    const price = Number(draft.price ?? '')
     const nextId = Math.max(0, ...products.map((product) => product.id)) + 1
     const newProduct: Product = {
       id: nextId,
-      name: form.name.trim(),
-      price: Number(form.price),
+      name: name.trim(),
+      price,
       category: 'New',
       inStock: true,
       onSale: false,
+      costPrice: price * 0.6,
     }
 
     setProducts((currentProducts) => [...currentProducts, newProduct])
-    setForm(emptyForm)
+    setDraft({})
   }
 
   return (
@@ -49,57 +56,22 @@ function App() {
         <h1>Product Catalog</h1>
         <div className="catalog-meta">
           <p className="product-count">{visibleProducts.length} products</p>
-          {saleCount > 0 && <p className="sale-counter">{saleCount} on sale</p>}
+          {saleCount > 0 && <SaleCounter count={saleCount} />}
         </div>
-        <label className="filter-toggle">
-          <input
-            type="checkbox"
-            checked={inStockOnly}
-            onChange={(event) => setInStockOnly(event.target.checked)}
-          />
-          In stock only
-        </label>
+        <FilterToggle checked={inStockOnly} onChange={setInStockOnly} />
       </header>
 
-      <ul className="product-grid">
-        {visibleProducts.map((product) => (
-          <li key={product.id} className="product-card">
-            <h2>{product.name}</h2>
-            <p className="category">{product.category}</p>
-            <p className="price">${product.price.toFixed(2)}</p>
-            <span className={product.inStock ? 'badge in-stock' : 'badge sold-out'}>
-              {product.inStock ? 'In stock' : 'Sold out'}
-            </span>
-          </li>
-        ))}
-      </ul>
+      {isLoading && <p className="status-message">Loading products…</p>}
+      {error && <p className="status-message error">Couldn't load products: {error}</p>}
+      {!isLoading && !error && <ProductGrid products={visibleProducts} />}
 
-      <form className="add-product-form" onSubmit={handleSubmit} noValidate>
-        <h2>Add product</h2>
-
-        <label>
-          Name
-          <input
-            type="text"
-            value={form.name}
-            onChange={(event) => setForm({ ...form, name: event.target.value })}
-          />
-          {errors.name && <span className="field-error">{errors.name}</span>}
-        </label>
-
-        <label>
-          Price
-          <input
-            type="text"
-            inputMode="decimal"
-            value={form.price}
-            onChange={(event) => setForm({ ...form, price: event.target.value })}
-          />
-          {errors.price && <span className="field-error">{errors.price}</span>}
-        </label>
-
-        <button type="submit">Add product</button>
-      </form>
+      <AddProductForm
+        draft={draft}
+        errors={errors}
+        onNameChange={(value) => setDraft({ ...draft, name: value })}
+        onPriceChange={(value) => setDraft({ ...draft, price: value })}
+        onSubmit={handleSubmit}
+      />
     </div>
   )
 }

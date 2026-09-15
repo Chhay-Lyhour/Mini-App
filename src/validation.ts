@@ -1,14 +1,16 @@
-import type { ProductFormErrors, ProductFormState } from './types'
+import type { ProductFormDraft, ProductFormErrors } from './types'
 
 // AI-generated per the module's co-pilot workflow — audit before trusting it.
-export function validateProductForm(form: ProductFormState): ProductFormErrors {
+export function validateProductForm(draft: ProductFormDraft): ProductFormErrors {
   const errors: ProductFormErrors = {}
+  const name = draft.name ?? ''
+  const price = draft.price ?? ''
 
-  if (form.name.trim() === '') {
+  if (name.trim() === '') {
     errors.name = 'Name is required.'
   }
 
-  const trimmedPrice = form.price.trim()
+  const trimmedPrice = price.trim()
   const parsedPrice = Number(trimmedPrice)
 
   if (trimmedPrice === '' || Number.isNaN(parsedPrice)) {

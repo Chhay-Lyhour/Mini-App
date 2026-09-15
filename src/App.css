@@ -39,6 +39,15 @@
   cursor: pointer;
 }
 
+.status-message {
+  color: var(--text);
+  margin: 0 0 24px;
+}
+
+.status-message.error {
+  color: #dc2626;
+}
+
 .product-grid {
   list-style: none;
   margin: 0 0 40px;
